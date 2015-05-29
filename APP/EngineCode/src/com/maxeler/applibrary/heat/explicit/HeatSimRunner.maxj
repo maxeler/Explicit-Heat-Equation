@@ -1,0 +1,176 @@
+package com.maxeler.applibrary.heat.explicit;
+
+import java.io.IOException;
+
+import com.maxeler.maxgen.fd.FDConfig;
+import com.maxeler.maxgen.fd.FDSimManager;
+import com.maxeler.maxgen.fd.StorageType;
+
+public class HeatSimRunner {
+
+	/** Size of wave field and data in the X axis. */
+	private static final int nx = 96;
+	/** Size of wave field and data in the Y axis. */
+	private static final int ny = 96;
+	/** Size of wave field and data in the Z axis. */
+	private static final int nz = 96;
+
+	/** Delta time in seconds. */
+	private static final double dt = 0.01;
+	/** Delta distance in metres. */
+	private static final double dx = 1.0f;
+	private static final double dy = 1.0f;
+	private static final double dz = 1.0f;
+	private static final double alpha = 1.77;
+
+	/** Size of the source (in cells). */
+	// private static final int sourceSize = 3;
+	/** Source location on X axis. */
+	// private static final int isx = nx / 2;
+	/** Source location on Y axis. */
+	// private static final int isy = ny / 2;
+	/** Source location on Z axis. */
+	// private static final int isz = 7;
+
+	/** Sponge width. */
+	// private static final int spongeWidth = 50;
+
+	/** Total number of timesteps to simulate. */
+	private static final int numTimeSteps = 32 + 1;
+
+	/** File in which to save receiver data */
+	private static String outputDir = "src/heat/explicit/";
+	private static String outputFileNameBase = "output";
+
+	public static void main(String[] args) {
+		HeatEngineParameters params = new HeatEngineParameters(args);
+		FDConfig config = HeatConfig.config(params);
+
+		// Compressed storage types are not supported in simulatiin
+		config.setWavefieldStorageType(StorageType.fix24);
+		config.setEarthModelStorageType("alpha", StorageType.fix24);
+
+
+		FDSimManager sim = new FDSimManager("HeatSim", config);
+		sim.setKernel(new HeatKernel(sim.makeKernelParameters(), params));
+
+		sim.build();
+
+		int kernelstep = params.getNumStep();
+		int timestepsPerFrame = 16 * kernelstep;
+
+		/** Earth model data. */
+		// double[] earthModel = DataGen.create2LayerEarthModel_vel(nx, ny, nz);
+		// DataGen.preprocessEarthModel_dvv(earthModel, nx, ny, nz,
+		// deltaDistance, deltaTime);
+
+		// double[] sponge = DataGen.createSponge(spongeWidth);
+		// sim.setMappedRom("sponge", sponge);
+		// Disable the sponge for simulation
+		// sim.setScalarInput("absorb", 0);
+
+		sim.setScalarInput("CX", dt * alpha / (dx * dx));
+		sim.setScalarInput("CY", dt * alpha / (dy * dy));
+		sim.setScalarInput("CZ", dt * alpha / (dz * dz));
+
+		OutputFile outputfile = null;
+
+		// Wavefield for current time step.
+		double[] field = new double[nx * ny * nz];
+		double[] alphaArr = new double[nx * ny * nz];
+
+		for (int x = 0; x < nx; ++x) {
+			for (int y = 0; y < ny; ++y) {
+				for (int z = 0; z < nz; ++z) {
+					int index = z + y * nz + x * (nz * ny);
+					field[index] = 0.0;
+
+					if ((z > 10 && z < (nz - 20)) & (y > 10 && y < (ny - 20))
+							& (x > 5 && x < (nx - 10)))
+						field[index] = 10.0;
+
+					alphaArr[index] = alpha;
+
+				}
+			}
+		}
+
+		sim.setProblemSize(nx, ny, nz);
+
+		/** The time step that we are currently simulating. */
+		int timestep = 0;
+
+		while (timestep < numTimeSteps) {
+			// set the earth model data
+			// sim.setEarthModelInputData("dvv", earthModel);
+
+			// set the source data
+			// double[] source = DataGen.genSource(sourceSize,
+			// timestep*deltaTime, fPeak);
+
+			/*
+			 * sim.setHostInputData("source", source, isx, isx + sourceSize,
+			 * isy, isy + sourceSize, isz, isz + sourceSize );
+			 */
+
+			sim.setHostOutputRegion("receiver", 0, nx, 0, ny, 0, nz);
+
+			// set the wave fields
+			sim.setWaveFieldInputData("in_T", field);
+			sim.setEarthModelInputData("alpha", alphaArr);
+
+			// run the simulation
+			sim.run("timestep_" + timestep);
+
+			// dump output data to file
+			if (timestep % timestepsPerFrame == 0) {
+				double[] dataOut = sim.getHostOutputData("receiver");
+
+				String filename = new String();
+				try {
+					filename = outputDir + outputFileNameBase + timestep
+							+ ".dat";
+					outputfile = new OutputFile(filename, nx, ny, nz, "X", "Y",
+							"Z");
+				} catch (IOException e) {
+					sim.logError("Error creating header file: %s (" + filename
+							+ ")", e);
+					System.exit(1);
+				}
+
+				try {
+					outputfile.writeData(dataOut);
+					sim.logMsg("Wrote data to '%s'.", filename);
+				} catch (IOException e) {
+					sim.logError("Error writing out data: %s " + "(" + filename
+							+ ")", e);
+					System.exit(1);
+				}
+			}
+
+			// output field for next iteration
+			field = sim.getWaveFieldOutputData("out_T");
+			timestep += kernelstep;
+		}
+
+		double[] dataOut = sim.getHostOutputData("receiver");
+		String filename = new String();
+		try {
+			filename = outputDir + outputFileNameBase + timestep + ".dat";
+			outputfile = new OutputFile(filename, nx, ny, nz, "X", "Y", "Z");
+		} catch (IOException e) {
+			sim.logError("Error creating header file: %s (" + filename + ")", e);
+			System.exit(1);
+		}
+
+		try {
+			outputfile.writeData(dataOut);
+			sim.logMsg("Wrote data to '%s'.", filename);
+		} catch (IOException e) {
+			sim.logError("Error writing out data: %s " + "(" + filename + ")",
+					e);
+			System.exit(1);
+		}
+
+	}
+}

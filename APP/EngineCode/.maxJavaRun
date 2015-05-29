@@ -1,0 +1,10 @@
+#!/bin/sh
+
+MAXCOMPILERDIR=/network-raid/opt/maxcompiler-2014.2
+MAXAPPPKG=com.maxeler.applibrary.heat.explicit
+MAXJVMMEM=8192
+MAXCOMPILERJCP=$MAXCOMPILERDIR/lib/MaxCompiler.jar:$MAXGENFDDIR/lib/MaxGenFD.jar
+MAXAPPJCP=bin:/home/arnaud/trunk/maxjlibs/bin
+MAXSOURCEDIRS=src
+export MAXMPPRMAILTO=$USER@maxeler.com
+

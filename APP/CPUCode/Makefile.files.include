@@ -1,0 +1,5 @@
+#
+# This file is managed by MaxIDE. Do NOT change.
+#
+HEADERS:= cpu_compute.h dfe_compute.h heat_equation.h memory.h 
+SOURCES:= cpu_compute.c dfe_compute.c heat_equation.c memory.c 

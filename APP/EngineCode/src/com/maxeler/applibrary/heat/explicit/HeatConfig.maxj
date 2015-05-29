@@ -1,0 +1,76 @@
+package com.maxeler.applibrary.heat.explicit;
+
+import com.maxeler.maxcompiler.v2.build.EngineParameters;
+import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFEFloat;
+import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFETypeFactory;
+import com.maxeler.maxcompiler.v2.managers.BuildConfig;
+import com.maxeler.maxcompiler.v2.managers.BuildConfig.Effort;
+import com.maxeler.maxcompiler.v2.managers.BuildConfig.Level;
+import com.maxeler.maxgen.fd.ComputeType;
+import com.maxeler.maxgen.fd.FDConfig;
+import com.maxeler.maxgen.fd.FDConfig.DefaultType;
+import com.maxeler.maxgen.fd.StorageType;
+
+public class HeatConfig {
+
+	public static FDConfig config(HeatEngineParameters params) {
+		FDConfig config;
+
+
+		if (params.isFixed()) {
+			final int bitWidth = params.getBitwidthFixed();
+			final int bitWidthCoeff = params.getBitwidthFixedCoeff();
+
+			config = new FDConfig(DefaultType.FIXED);
+
+			config.setWavefieldComputeType(ComputeType.fix32);
+			config.setCoefficientType(bitWidthCoeff);
+			config.setScalarInputType("inv_dx2", bitWidthCoeff);
+			config.setScalarInputType("inv_dy2", bitWidthCoeff);
+			config.setScalarInputType("inv_dz2", bitWidthCoeff);
+			config.setEarthModelComputeType("alpha", bitWidth);
+			config.setEarthModelStorageType("alpha", StorageType.fix32);
+			config.setWavefieldStorageType(StorageType.compressed16);
+		} else {
+			DFEFloat t = DFETypeFactory.dfeFloat(8, 24);
+
+			config = new FDConfig(DefaultType.FLOAT);
+
+			config.setWavefieldComputeType(ComputeType.float8_24);
+			config.setCoefficientType(t);
+			config.setScalarInputType("inv_dx2", t);
+			config.setScalarInputType("inv_dy2", t);
+			config.setScalarInputType("inv_dz2", t);
+			config.setEarthModelComputeType("alpha", t);
+			config.setEarthModelStorageType("alpha", StorageType.float8_24);
+			config.setWavefieldStorageType(StorageType.float8_24);
+		}
+
+		if (params.getTarget() == EngineParameters.Target.DFE_SIM) {
+			config.setParallelPipelines(1);
+		} else {
+			config.setParallelPipelines(params.getNumPipes());
+		}
+
+		BuildConfig bc = new BuildConfig(Level.FULL_BUILD);
+		bc.setBuildEffort(Effort.VERY_HIGH);
+		bc.setEnableTimingAnalysis(true);
+		bc.setMPPRCostTableSearchRange(params.getMPPRStartCT(),
+				params.getMPPREndCT());
+		bc.setMPPRParallelism(params.getMPPRThreads());
+		config.setBuildConfig(bc);
+
+		config.setClockFrequency(params.getStreamFrequency());
+
+
+
+		config.setMaxBlockSize(192, 120);
+
+		config.setSimulationEnabled(params.getTarget() == EngineParameters.Target.DFE_SIM);
+		config.setBoardModel(params.getDFEModel());
+
+		config.setUserParam("n_timestep", params.getNumStep());
+
+		return config;
+	}
+}

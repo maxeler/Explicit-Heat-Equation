@@ -1,0 +1,181 @@
+package com.maxeler.applibrary.heat.explicit;
+
+import com.maxeler.maxcompiler.v2.build.EngineParameters;
+import com.maxeler.maxcompiler.v2.managers.DFEModel;
+import com.maxeler.maxgen.fd.FDConfig;
+
+public class HeatEngineParameters extends EngineParameters {
+
+	private static final String board = "DFEModel";
+	private static final String isBuffGce = "isBuffGce";
+	private static final String isMultiCycleReset = "isMultiCycleReset";
+	private static final String CEReplication = "CEReplication";
+	private static final String maxFileName = "maxFileName";
+	private static final String target = "target";
+	private static final String MPPRRetryThreshold = "MPPRRetryThreshold";
+	private static final String MPPRStartCT = "MPPRStartCT";
+	private static final String MPPREndCT = "MPPREndCT";
+	private static final String MPPRThreads = "MPPRThreads";
+	private static final String streamFrequency = "streamFrequency";
+	private static final String memFrequency = "memFrequency";
+	private static final String numPipes = "numPipes";
+	private static final String tag = "tag";
+	private static final String hasStreamStatus = "hasStreamStatus";
+	private static final String isPhaseClocks = "isPhaseClocks";
+	private static final String dspFactor = "dspFactor";
+
+	private static final String isFixed = "isFixed";
+	private static final String bitwidthFixed = "bitwidthFixed";
+	private static final String bitwidthFixedCoeff = "bitwidthFixedCoeff";
+
+	private static final String numStep = "numStep";
+
+	private static final String kernelType = "type";
+
+	public HeatEngineParameters(String[] argv) {
+		super(argv);
+	}
+
+	public boolean isSimulation() {
+		return (getParam(target) == Target.DFE);
+	}
+
+	public boolean getIsBuffGce() {
+		return getParam(isBuffGce);
+	}
+
+	public boolean getIsMultiCycleReset() {
+		return getParam(isMultiCycleReset);
+	}
+
+	public int getCEReplication() {
+		return getParam(CEReplication);
+	}
+
+	public int getStreamFrequency() {
+		return getParam(streamFrequency);
+	}
+
+	public int getMemFrequency() {
+		return getParam(memFrequency);
+	}
+
+	public int getNumPipes() {
+		return getParam(numPipes);
+	}
+
+	public String getTag() {
+		return getParam(tag);
+	}
+
+	public boolean getHasStreamStatus() {
+		return getParam(hasStreamStatus);
+	}
+
+	public boolean getIsPhaseClocks() {
+		return getParam(isPhaseClocks);
+	}
+
+	public double getDspFactor() {
+		return getParam(dspFactor);
+	}
+
+	public int getNumStep() {
+		return getParam(numStep);
+	}
+
+	public void setNumStep(int step) {
+		declareParam(numStep, DataType.INT, step);
+	}
+
+	public boolean isFixed() {
+		return getParam(isFixed);
+	}
+
+	public int getBitwidthFixed() {
+		return getParam(bitwidthFixed);
+	}
+
+	public int getBitwidthFixedCoeff() {
+		return getParam(bitwidthFixedCoeff);
+	}
+
+	public String getKernelType() {
+		return getParam(kernelType);
+	}
+
+	@Override
+	protected void declarations() {
+
+		final int n_step = 12;
+		final int n_pipe = 16;
+		final boolean is_fixed = true;
+		final int bitwidth_fixed = 16;
+		final int bitwidth_coeff = 9;
+
+		/* User parameters */
+		declareParam(isFixed, DataType.BOOL, is_fixed);
+
+		declareParam(numStep, DataType.INT, n_step);
+		declareParam(bitwidthFixed, DataType.INT, bitwidth_fixed);
+		declareParam(bitwidthFixedCoeff, DataType.INT, bitwidth_coeff);
+
+		/* Standard parameters */
+
+		// build parameters
+		declareParam(target, Target.class, Target.DFE);
+		declareParam(board, DataType.DFEMODEL, DFEModel.MAIA);
+		declareParam(MPPRRetryThreshold, DataType.INT, 500);
+		declareParam(MPPRStartCT, DataType.INT, 1);
+		declareParam(MPPREndCT, DataType.INT, 16);
+		declareParam(MPPRThreads, DataType.INT, 2);
+		declareParam(CEReplication, DataType.INT, 6);
+		declareParam(isBuffGce, DataType.BOOL, true);
+		declareParam(isMultiCycleReset, DataType.BOOL, true);
+		declareParam(isPhaseClocks, DataType.BOOL, false);
+
+		// common kernel parameters
+		declareParam(streamFrequency, DataType.INT, 150);
+		declareParam(memFrequency, DataType.INT, -1);
+		declareParam(numPipes, DataType.INT, n_pipe);
+		declareParam(dspFactor, DataType.DOUBLE, 0.5);
+
+		// for debugging
+		declareParam(hasStreamStatus, DataType.BOOL, false);
+
+		// naming
+		declareParam(maxFileName, DataType.STRING, "Heat");
+		declareParam(tag, DataType.STRING,
+				"");
+
+	}
+
+	@Override
+	protected void deriveParameters() {
+	}
+
+	@Override
+	protected void validate() {
+
+	}
+
+	@Override
+	public String getBuildName() {
+		String n = "Explicit"
+		+ "_"
+		+ getNumStep()
+		+ "S_"
+		+ getNumPipes()
+		+ "P_"
+		+ (isFixed() ? (getBitwidthFixed() + "Fixed_"
+				+ getBitwidthFixedCoeff() + "C") : "Float");
+		return String.format("%s_%s_%s%s", getMaxFileName(), getDFEModel()
+				.toString(), getTarget().toString(), getTag());
+	}
+
+	public void applyParams(FDConfig config) {
+		// n.numStep
+		// config.setUserParam(numStep, getNumStep());
+	}
+
+}

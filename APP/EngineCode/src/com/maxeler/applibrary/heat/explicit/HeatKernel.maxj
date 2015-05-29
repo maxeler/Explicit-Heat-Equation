@@ -1,0 +1,78 @@
+package com.maxeler.applibrary.heat.explicit;
+
+import com.maxeler.maxcompiler.v2.kernelcompiler.Optimization;
+import com.maxeler.maxcompiler.v2.kernelcompiler.op_management.MathOps;
+import com.maxeler.maxgen.fd.ConvolveAxes;
+import com.maxeler.maxgen.fd.FDKernel;
+import com.maxeler.maxgen.fd.FDKernelParameters;
+import com.maxeler.maxgen.fd.FDVar;
+import com.maxeler.maxgen.fd.stencils.Stencil;
+
+public class HeatKernel extends FDKernel {
+
+	private final int stencil_size = 3;
+
+	public HeatKernel(FDKernelParameters parameters,
+			HeatEngineParameters engine_params) {
+		super(parameters);
+
+		/* Parameters */
+		int n_timestep = engine_params.getNumStep();
+		int bitwidth = engine_params.getBitwidthFixed();
+
+		/* Stencil */
+		double rollOn[][] = { { 0.0, -2, 1 } };
+		double rollOff[][] = { { 1, -2, 0.0 } };
+		double interior[] = { 1, -2, 1 };
+		Stencil stencil = asymmetricStencil(-1, 1, rollOn, interior, rollOff,
+				2.0);
+
+		/* Input streams */
+		FDVar curr = io.waveFieldInput("in_T", 1.0, n_timestep
+				* (stencil_size / 2)); // Current wavefield
+		FDVar alpha = io.earthModelInput("alpha", 10, 0); // Earth model
+
+		/* Scalar Inputs */
+		FDVar dx2 = io.scalarInput("inv_dx2", 1.0, 0.05);
+		FDVar dy2 = io.scalarInput("inv_dy2", 1.0, 0.05);
+		FDVar dz2 = io.scalarInput("inv_dz2", 1.0, 0.05);
+
+
+
+		/* Computations */
+		FDVar stencil_input = curr;
+		FDVar result = constant.fdvar(0.0);
+
+		optimization.pushDSPFactor(1.0);
+		for (int t = 0; t < n_timestep; ++t) {
+			/*
+			 * FDVar laplacian = CX * convolve( stencil_input, ConvolveAxes.X,
+			 * stencil) + CY * convolve( stencil_input, ConvolveAxes.Y, stencil)
+			 * + CZ * convolve( stencil_input, ConvolveAxes.Z, stencil);
+			 */
+
+			FDVar l_x = convolve(stencil_input, ConvolveAxes.X, stencil);
+			FDVar l_y = convolve(stencil_input, ConvolveAxes.Y, stencil);
+			FDVar l_z = convolve(stencil_input, ConvolveAxes.Z, stencil);
+
+			optimization.pushFixOpMode(Optimization.bitSizeExact(bitwidth),
+					Optimization.offsetExact(2 - bitwidth), MathOps.ALL);
+
+			FDVar laplacian = dx2 * l_x + dy2 * l_y + dz2 * l_z;
+			result = stencil_input + alpha * laplacian;
+
+			optimization.popFixOpMode(MathOps.ALL);
+
+			if(engine_params.isFixed()){
+				result = result.cast(-1, 1);
+			}
+			stencil_input = result;
+
+		}
+		optimization.popDSPFactor();
+
+		/* Output streams */
+		io.hostOutput("receiver", result);// Receiver output to host
+		io.waveFieldOutput("out_T", result);// Wavefield output
+	}
+}

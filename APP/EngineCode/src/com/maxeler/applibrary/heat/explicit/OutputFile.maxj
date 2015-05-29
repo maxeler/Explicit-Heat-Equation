@@ -1,0 +1,110 @@
+package com.maxeler.applibrary.heat.explicit;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
+import java.nio.channels.FileChannel;
+
+public class OutputFile {
+
+	private final File outputFile;
+
+	private final int m_xdim;
+	private final int m_ydim;
+	private final int m_zdim;
+
+	private final String m_xdim_name;
+	private final String m_ydim_name;
+	private final String m_zdim_name;
+
+
+	/**
+	 * Opens an output file and creates a header file for it.
+	 * @param fileName Name for the output file. fileName.H will be used for the header file.
+	 * @param xDim Width of the image.
+	 * @param yDim Height of the image.
+	 * @throws IOException
+	 */
+	public OutputFile
+	(String fileName,
+		int xDim,
+		int yDim,
+		int zDim,
+		String xDimName,
+		String yDimName,
+		String zDimName) throws IOException
+		{
+	m_xdim = xDim;
+	m_ydim = yDim;
+	m_zdim = zDim;
+
+	m_xdim_name = xDimName;
+	m_ydim_name = yDimName;
+	m_zdim_name = zDimName;
+
+	outputFile = new File(fileName);
+
+	File parentDir = outputFile.getParentFile();
+	if (parentDir != null)
+		parentDir.mkdirs();
+	if (outputFile.exists())
+		outputFile.delete();
+	outputFile.createNewFile();
+		}
+
+	public void writeData( double [] data ) throws IOException {
+
+	BufferedWriter bw
+	= new BufferedWriter( new FileWriter(outputFile, true));
+
+	bw.write("#" + m_xdim_name + " " + m_ydim_name + " " + m_zdim_name);
+	bw.newLine();
+
+	int index = 0;
+	for( int x = 0; x<m_xdim; ++x ) {
+		for( int y = 0; y<m_ydim; ++y ) {
+		for( int z = 0; z<m_zdim; ++z ) {
+			bw.write( x + " " + y + " " + z + " " + data[index] );
+			bw.newLine();
+
+			++index;
+		}
+		bw.newLine();
+		}
+		bw.newLine();
+	}
+
+	bw.close();
+	}
+
+	/**
+	 * Append floating point data to the end of the file. The data is written
+	 * out in IEEE 754 single-precision (32 bits) format using little-endian
+	 * byte ordering.
+	 * @param data The data to write out.
+	 * @throws IOException
+	 */
+	public void appendData(double[] data) throws IOException {
+	ByteBuffer b = ByteBuffer.allocate(data.length * 4);
+	b.order(ByteOrder.LITTLE_ENDIAN);
+	FloatBuffer fb = b.asFloatBuffer();
+
+	for (double x : data)
+		fb.put((float) x);
+
+	FileOutputStream ff = new FileOutputStream(outputFile, true);
+	FileChannel c = ff.getChannel();
+	try {
+		c.write(b);
+	}
+	finally {
+		c.close();
+	}
+	}
+
+}

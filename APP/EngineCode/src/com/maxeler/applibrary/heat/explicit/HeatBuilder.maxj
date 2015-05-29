@@ -1,0 +1,44 @@
+package com.maxeler.applibrary.heat.explicit;
+
+import com.maxeler.maxgen.fd.FDConfig;
+import com.maxeler.maxgen.fd.FDKernel;
+import com.maxeler.maxgen.fd.FDManager;
+
+public class HeatBuilder {
+
+	public static void main(String[] args) {
+
+		HeatEngineParameters params = new HeatEngineParameters(args);
+
+		FDConfig config;
+		config = HeatConfig.config(params);
+
+		FDManager m = new FDManager(params.getMaxFileName(), params.getBuildName(), config);
+
+		params.logParameters(m.getCustomManager());
+
+		/*
+		 * hidden parameters
+		 * m.getCustomManager().getCurrentKernelConfig().optimization
+		 * .setROMImplementationBRAMThreshold(3);
+		 * m.getCustomManager().getCurrentKernelConfig
+		 * ().optimization.setFIFOImplementationBRAMThreshold(3);
+		 * PhotonKernelConfiguration photonKernelConfig =
+		 * _KernelConfiguration.getPhotonKernelConfig
+		 * (m.getCurrentKernelConfig());
+		 * photonKernelConfig.setBlockRAMDelayPipelining
+		 * (BlockRAMDelayPipelining.IN_BRAM_ONLY);
+		 */
+
+		m.getCustomManager().config.setAllowNonMultipleTransitions(true);
+		params.applyParams(config);
+
+		FDKernel k;
+		k = new HeatKernel(m.makeKernelParameters(), params);
+
+		m.setKernel(k);
+
+		m.build();
+	}
+
+}
