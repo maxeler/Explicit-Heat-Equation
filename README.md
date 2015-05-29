@@ -8,7 +8,7 @@ Simulate heat spreading according to explicit methods.
 Usage
 -----
 
-Set environment variable RunRule to be Simulation or Hardware.
+Set environment variable RUNRULE to be Simulation or Hardware.
 
 To compile:
 
@@ -18,6 +18,6 @@ make
 
 To run:
 
-APP/RunRules/$RunRule/bin/ExplicitHeatEquation <path to parameter file>
+APP/RunRules/$RunRule/bin/ExplicitHeatEquation [path to parameter file]
 
 A parameter file can be generated with APP/CPUCode/generate_parmfile.py
