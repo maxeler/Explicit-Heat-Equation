@@ -8,7 +8,7 @@ Simulate heat spreading according to explicit methods.
 Usage
 -----
 
-Set environment variable RUNRULE to be Simulation or Hardware.
+Set environment variable RUNRULE to be Simulation or DFE.
 
 To compile:
 
