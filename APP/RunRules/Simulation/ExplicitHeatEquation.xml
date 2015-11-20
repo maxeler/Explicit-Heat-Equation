@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="ExplicitHeatEquation_EngineCode_run_script" default="all" basedir="../../EngineCode">
+<project name="Explicit-Heat-Equation_EngineCode_run_script" default="all" basedir="../../EngineCode">
     <property environment="env"/>
+    <condition property="maxcompilerdirpath" value="${env.MAXCOMPILERJCP}">
+        <isset property="env.MAXCOMPILERJCP"/>
+    </condition>
+    <condition property="maxcompilerdirpath" value="${env.MAXCOMPILERDIR}/lib/MaxCompiler.jar">
+        <not>
+            <isset property="maxcompilerdirpath"/>
+        </not>
+    </condition>
     <condition property="EnvClassPath" value="${env.CLASSPATH}">
         <isset property="env.CLASSPATH"/>
     </condition>
@@ -21,8 +29,8 @@
             <classpath>
                 <pathelement path="${env.ANT_MAXELER_INTERNAL_MAXIDE_JARS}"/>
                 <pathelement path="../RunRules/Simulation/dist/bin"/>
-                <pathelement path="../../maxeda/bin"/>
-                <pathelement path="../../MaxGenFD/bin"/>
+                <pathelement path="${maxcompilerdirpath}"/>
+                <pathelement path="${env.MAXGENFDDIR}/lib/MaxGenFD.jar"/>
                 <pathelement path="${EnvClassPath}"/>
             </classpath>
         </java>
