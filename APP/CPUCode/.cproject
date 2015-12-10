@@ -48,8 +48,6 @@
 							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug.645061548" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug"/>
 							<tool id="cdt.managedbuild.tool.gnu.assembler.exe.debug.1297160551" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.exe.debug">
 								<option id="gnu.both.asm.option.include.paths.2024760174" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="/network-raid/opt/intel/composer_xe_2011_sp1.7.256/composer_xe_2011_sp1.7.256/mkl/include"/>
-									<listOptionValue builtIn="false" value="/network-raid/opt/intel/composer_xe_2011_sp1.7.256/composer_xe_2011_sp1.7.256/tbb/include"/>
 									<listOptionValue builtIn="false" value="&quot;${MAXGENFDDIR}/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${MAXCOMPILERDIR}/include/slic&quot;"/>
 								</option>

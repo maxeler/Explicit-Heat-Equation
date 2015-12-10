@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <maxCompilerManager version="2">
-<enginePart internalEngineSubproject="Explicit-Heat-Equation_EngineCode" isSrcBin="false" isUseDefaultSelected="false" outputLocation="/Explicit-Heat-Equation_EngineCode/bin" projectName="Explicit-Heat-Equation"/>
-<cpuPart internalCpuSubproject="Explicit-Heat-Equation_CPUCode"/>
+<enginePart internalEngineSubproject="ExplicitHeatEquation_EngineCode" isSrcBin="false" isUseDefaultSelected="false" outputLocation="/ExplicitHeatEquation_EngineCode/bin" projectName="ExplicitHeatEquation"/>
+<cpuPart internalCpuSubproject="ExplicitHeatEquation_CPUCode"/>
 <watchedFiles/>
 </maxCompilerManager>
