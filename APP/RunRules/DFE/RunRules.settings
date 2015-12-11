@@ -7,6 +7,9 @@
 <programArgument argument="isFixed" value="false"/>
 <programArgument argument="numPipes" value="24"/>
 <programArgument argument="numStep" value="1"/>
+<programArgument argument="MPPRStartCT" value="1"/>
+<programArgument argument="MPPREndCT" value="16"/>
+<programArgument argument="MPPRThreads" value="1"/>
 </common>
 <maxFiles>
 <maxFile buildName="ExplicitHeatEquation" buildOrUseExisting="build">

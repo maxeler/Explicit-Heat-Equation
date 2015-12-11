@@ -62,7 +62,7 @@ include/ExplicitHeatEquation.h: maxfiles/ExplicitHeatEquation.h
 maxfiles/ExplicitHeatEquation.max maxfiles/ExplicitHeatEquation.h:
 # Ensure that maxfiles do not get build by this Makefile when running in MaxIDE
 ifndef MAXIDE_RUN
-	test -f $@ || env  MAX_BUILDPARAMS=" DFEModel=MAIA  target=DFE  maxFileName=ExplicitHeatEquation isFixed='false' numPipes='24' numStep='1' "  ant -v -f ExplicitHeatEquation.xml
+	test -f $@ || env  MAX_BUILDPARAMS=" DFEModel=MAIA  target=DFE  maxFileName=ExplicitHeatEquation isFixed='false' numPipes='24' numStep='1' MPPRStartCT='1' MPPREndCT='16' MPPRThreads='1' "  ant -v -f ExplicitHeatEquation.xml
 else
 	test -f $@ || ( echo 'Maxfile unavailable: $@' >/dev/stderr ; exit 1 )
 endif
