@@ -5,6 +5,12 @@ Explicit-Heat-Equation
 Simulate heat spreading according to explicit methods.
 
 
+Requirements
+------------
+
+This application requires MaxGenFD library.
+
+
 Usage
 -----
 
